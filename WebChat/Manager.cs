@@ -65,16 +65,12 @@ namespace WebChat
         private Dictionary<int, User> users;
         Dictionary<int, Message> messages;
 
-        public SQLManager(User user, string connectionString)
+        public SQLManager(string connectionString)
         {
-            User = user;
-
-
             messages = new Dictionary<int, Message>();
             users = new Dictionary<int, User>();
             this.connectionString = connectionString;
             connection = new SqlConnection(connectionString);
-            Register();
         }
 
         public bool Register()
@@ -95,15 +91,13 @@ namespace WebChat
                     adapter.Fill(table);
 
                     User.Guid = table.Rows[0].Field<Guid>("UserID");
-
-
+                    
                     connection.Close();
                     result = true;
                 }
                 catch (Exception ex)
                 {
                     connection.Close();
-                    Console.WriteLine(ex.ToString());
                     result = false;
                 }
             }
@@ -136,7 +130,6 @@ namespace WebChat
                 catch (Exception ex)
                 {
                     connection.Close();
-                    Console.WriteLine(ex.ToString());
                 }
             }
         }
@@ -167,7 +160,6 @@ namespace WebChat
                 catch (Exception ex)
                 {
                     connection.Close();
-                    Console.WriteLine(ex.ToString());
                     result = false;
                 }
             }
@@ -199,7 +191,6 @@ namespace WebChat
                 catch (Exception ex)
                 {
                     connection.Close();
-                    Console.WriteLine(ex.ToString());
                     result = false;
                 }
             }
@@ -221,7 +212,6 @@ namespace WebChat
             catch (Exception ex)
             {
                 connection.Close();
-                Console.WriteLine(ex.ToString());
             }
         }
 
@@ -237,7 +227,7 @@ namespace WebChat
             List<string> rooms = new List<string>();
             foreach (DataRow row in table.Rows)
             {
-                rooms.Add(row.Field<string>("Name"));
+                rooms.Add(row.Field<string>("Name").Trim());
             }
 
             return rooms.ToArray();
@@ -261,7 +251,6 @@ namespace WebChat
             catch (Exception ex)
             {
                 connection.Close();
-                Console.WriteLine(ex.ToString());
                 return false;
             }
         }
@@ -270,7 +259,6 @@ namespace WebChat
         {
             var updateCommand = new SqlCommand("client.GetMessages", connection);
             updateCommand.CommandType = System.Data.CommandType.StoredProcedure;
-            updateCommand.Parameters.Add(new SqlParameter("@userID", User.Guid));
             updateCommand.Parameters.Add(new SqlParameter("@roomID", Room.Guid));
 
             using (SqlDataAdapter adapter = new SqlDataAdapter(updateCommand))
@@ -305,7 +293,6 @@ namespace WebChat
                 catch (Exception ex)
                 {
                     connection.Close();
-                    Console.WriteLine(ex.ToString());
                 }
             }
             return new Message[0];
