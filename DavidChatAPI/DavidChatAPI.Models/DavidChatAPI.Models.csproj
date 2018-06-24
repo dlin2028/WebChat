@@ -40,12 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GetMessageResponse.cs" />
-    <Compile Include="GetUsers.cs" />
-    <Compile Include="JoinRoomResponse.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RegisterResponse.cs" />
     <Compile Include="Room.cs" />
     <Compile Include="RoomInfo.cs" />
     <Compile Include="SendMessage.cs" />

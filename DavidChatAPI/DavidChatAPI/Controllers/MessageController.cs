@@ -8,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using WebChat.Models;
 
 namespace DavidChatAPI.Controllers
 {
@@ -18,7 +17,7 @@ namespace DavidChatAPI.Controllers
 
         [HttpPost]
         [Route("Message/SendMessage")]
-        public void SendMessage([FromBody]SendMessage sendMessage)
+        public IHttpActionResult SendMessage([FromBody]SendMessage sendMessage)
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
             using (SqlCommand command = new SqlCommand("Client.SendMessage", connection))
@@ -32,22 +31,23 @@ namespace DavidChatAPI.Controllers
                 command.ExecuteNonQuery();
                 connection.Close();
             }
+            return Ok();
         }
 
 
         [HttpPost]
         [Route("Message/GetNewMessages")]
-        public GetMessageResponse GetNewMessages([FromBody] Guid roomID)
+        public IEnumerable<Message> GetNewMessages([FromBody] Room room)
         {
             DataTable table = new DataTable();
-            List<ReceivedMessage> messages = new List<ReceivedMessage>();
+            List<Message> messages = new List<Message>();
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             using (SqlCommand command = new SqlCommand("Client.SendMessage", connection))
             using (SqlDataAdapter adapter = new SqlDataAdapter(command))
             {
                 command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.Add(new SqlParameter("@roomID", roomID));
+                command.Parameters.Add(new SqlParameter("@roomID", room.RoomID));
 
                 connection.Open();
                 adapter.Fill(table);
@@ -56,7 +56,7 @@ namespace DavidChatAPI.Controllers
 
             foreach (DataRow row in table.Rows)
             {
-                messages.Add(new ReceivedMessage()
+                messages.Add(new Message()
                 {
                     UserPublicID = row.Field<int>("PublicID"),
                     MessageID = row.Field<int>("MessageID"),
@@ -65,12 +65,7 @@ namespace DavidChatAPI.Controllers
                 });
             }
 
-            if(messages.Count <= 0)
-            {
-                return new GetMessageResponse() { Messages = messages.ToArray(), Result = false };
-            }
-            
-            return new GetMessageResponse() { Messages = messages.ToArray(), Result = true};
+            return messages;
         }
     }
 }

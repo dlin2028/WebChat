@@ -5,6 +5,7 @@ using System.Web;
 
 namespace WebChat
 {
+    using DavidChatAPI.Models;
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
@@ -13,7 +14,6 @@ namespace WebChat
     using System.Linq;
     using System.Net;
     using System.Web;
-    using WebChat.Models;
 
     public class Message
     {
@@ -27,29 +27,11 @@ namespace WebChat
             Time = time;
         }
     }
-    public class User
-    {
-        public string Name;
-        public Guid? Guid;
-        public ConsoleColor Color;
-
-        public User(string name, ConsoleColor color)
-        {
-            Name = name;
-            Color = color;
-        }
-        public User(string name, ConsoleColor color, Guid guid)
-        {
-            Name = name;
-            Color = color;
-            Guid = guid;
-        }
-    }
     public class Room
     {
         public string Name;
         public string Password;
-        public Guid Guid;
+        public Guid? Guid;
 
         public Room(string name, string password, Guid guid)
         {
@@ -81,79 +63,50 @@ namespace WebChat
             using (WebClient client = new WebClient())
             {
                 client.BaseAddress = baseUri;
-                RegisterResponse response = (RegisterResponse)JsonConvert.DeserializeObject(client.DownloadString("User/Register"));
+                User response = (User)JsonConvert.DeserializeObject(client.DownloadString("User/Register"));
                 
 
-                if (!response.Result)
+                if (response == null)
                 {
                     return false;
                 }
 
-                User.Guid = response.UserID;
+                User.Guid = response.Guid;
             }
             return true;
         }
 
         public void GetUsers()
         {
-            var command = new SqlCommand("client.GetUsers", connection);
-            command.CommandType = System.Data.CommandType.StoredProcedure;
-            command.Parameters.Add(new SqlParameter("@roomID", Room.Guid));
-
-            using (SqlDataAdapter adapter = new SqlDataAdapter(command))
+            using (WebClient client = new WebClient())
             {
-                try
+                client.BaseAddress = baseUri;
+                List<User> userList = (List<User>)JsonConvert.DeserializeObject(client.DownloadString("User/Register"));
+
+                foreach (var user in userList)
                 {
-                    DataTable table = new DataTable();
-                    connection.Open();
-
-                    adapter.Fill(table);
-
-                    users = new Dictionary<int, User>();
-                    foreach (DataRow row in table.Rows)
-                    {
-                        users.Add(row.Field<int>("PublicID"), new User(row.Field<string>("Name"), (ConsoleColor)row.Field<int>("Color")));
-                    }
-
-                    connection.Close();
-                }
-                catch (Exception ex)
-                {
-                    connection.Close();
+                    users.Add((int)user.PublicID, user);
                 }
             }
         }
 
         public bool JoinRoom(string name, string password)
         {
-            var joinCommand = new SqlCommand("client.JoinRoom", connection);
-            joinCommand.CommandType = System.Data.CommandType.StoredProcedure;
-            joinCommand.Parameters.Add(new SqlParameter("@userID", User.Guid));
-            joinCommand.Parameters.Add(new SqlParameter("@roomName", name));
-            joinCommand.Parameters.Add(new SqlParameter("@password", password));
-
-            bool result = false;
-            using (SqlDataAdapter adapter = new SqlDataAdapter(joinCommand))
+            using (WebClient client = new WebClient())
             {
-                try
+                client.BaseAddress = baseUri;
+                client.UploadString("Room/JoinRoom", new Room(name, password, null);
+                User response = (User)JsonConvert.DeserializeObject();
+
+
+                if (response == null)
                 {
-                    connection.Open();
-
-                    DataTable table = new DataTable();
-                    adapter.Fill(table);
-
-                    Room = new Room(name, password, table.Rows[0].Field<Guid>("RoomID"));
-
-                    connection.Close();
-                    result = true;
+                    return false;
                 }
-                catch (Exception ex)
-                {
-                    connection.Close();
-                    result = false;
-                }
+
+                User.Guid = response.Guid;
             }
-            return result;
+            return true;
         }
 
         public bool CreateRoom(string name, string password)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DavidChatAPI.Models;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -7,7 +8,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using WebChat.Models;
 
 namespace DavidChatAPI.Controllers
 {
@@ -17,7 +17,7 @@ namespace DavidChatAPI.Controllers
 
         [HttpGet]
         [Route("User/Register")]
-        public RegisterResponse Register()
+        public User Register()
         {
             DataTable table = new DataTable();
 
@@ -33,8 +33,13 @@ namespace DavidChatAPI.Controllers
             }
             Guid guid;
             bool result = Guid.TryParse(table.Rows[0].Field<string>("UserID"), out guid);
+            
+            if(result)
+            {
+                return new User() { Guid = guid };
+            }
 
-            return new RegisterResponse() { UserID = guid, Result = result };
+            return null;
         }
     }
 }

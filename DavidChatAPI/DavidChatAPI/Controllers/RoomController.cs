@@ -8,7 +8,6 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using DavidChatAPI.Models;
-using WebChat.Models;
 
 namespace DavidChatAPI.Controllers
 {
@@ -76,17 +75,15 @@ namespace DavidChatAPI.Controllers
 
         [HttpPost]
         [Route("Room/GetUsers/")]
-        public IEnumerable<User> GetUsers([FromBody] GetUsers getUsers)
+        public IEnumerable<User> GetUsers([FromBody] Room room)
         {
             DataTable table = new DataTable();
             using (SqlConnection connection = new SqlConnection(connectionString))
-            using (SqlCommand command = new SqlCommand("Client.JoinRoom", connection))
+            using (SqlCommand command = new SqlCommand("Client.GetUsers", connection))
             using (SqlDataAdapter adapter = new SqlDataAdapter(command))
             {
                 command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.Add(new SqlParameter("@userID", joinRoom.UserID));
-                command.Parameters.Add(new SqlParameter("@roomName", joinRoom.Name));
-                command.Parameters.Add(new SqlParameter("@password", joinRoom.Password));
+                command.Parameters.Add(new SqlParameter("@roomID", room.RoomID));
 
                 connection.Open();
                 adapter.Fill(table);
