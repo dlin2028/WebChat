@@ -5,12 +5,15 @@ using System.Web;
 
 namespace WebChat
 {
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Data;
     using System.Data.SqlClient;
     using System.Linq;
+    using System.Net;
     using System.Web;
+    using WebChat.Models;
 
     public class Message
     {
@@ -27,7 +30,7 @@ namespace WebChat
     public class User
     {
         public string Name;
-        public Guid Guid;
+        public Guid? Guid;
         public ConsoleColor Color;
 
         public User(string name, ConsoleColor color)
@@ -60,48 +63,34 @@ namespace WebChat
         public User User;
         public Room Room;
 
-        private string connectionString;
+        private string baseUri;
         private SqlConnection connection;
         private Dictionary<int, User> users;
         Dictionary<int, Message> messages;
 
-        public SQLManager(string connectionString)
+        public SQLManager(string baseUri)
         {
             messages = new Dictionary<int, Message>();
             users = new Dictionary<int, User>();
-            this.connectionString = connectionString;
-            connection = new SqlConnection(connectionString);
+            this.baseUri = baseUri;
+            connection = new SqlConnection(baseUri);
         }
 
         public bool Register()
         {
-            var joinCommand = new SqlCommand("client.Register", connection);
-            joinCommand.CommandType = System.Data.CommandType.StoredProcedure;
-            joinCommand.Parameters.Add(new SqlParameter("@name", User.Name));
-            joinCommand.Parameters.Add(new SqlParameter("@color", (int)User.Color));
-
-            bool result = false;
-            using (SqlDataAdapter adapter = new SqlDataAdapter(joinCommand))
+            using (WebClient client = new WebClient())
             {
-                try
-                {
-                    connection.Open();
+                client.BaseAddress = baseUri;
+                RegisterResponse response = (RegisterResponse)JsonConvert.DeserializeObject(client.DownloadString("User/Register"));
 
-                    DataTable table = new DataTable();
-                    adapter.Fill(table);
-
-                    User.Guid = table.Rows[0].Field<Guid>("UserID");
-                    
-                    connection.Close();
-                    result = true;
-                }
-                catch (Exception ex)
+                if (!response.Result)
                 {
-                    connection.Close();
-                    result = false;
+                    return false;
                 }
+
+                User.Guid = response.UserID;
             }
-            return result;
+            return true;
         }
 
         public void GetUsers()

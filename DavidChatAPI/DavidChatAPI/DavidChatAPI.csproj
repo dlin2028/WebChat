@@ -86,11 +86,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\MessageController.cs" />
     <Compile Include="Controllers\RoomController.cs" />
+    <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\Room.cs" />
+    <Compile Include="Models\CreateRoom.cs" />
+    <Compile Include="Models\CreateRoomResponse.cs" />
+    <Compile Include="Models\GetMessageResponse.cs" />
+    <Compile Include="Models\GetRoomsResponse.cs" />
+    <Compile Include="Models\JoinRoom.cs" />
+    <Compile Include="Models\JoinRoomResponse.cs" />
+    <Compile Include="Models\Message.cs" />
+    <Compile Include="Models\RegisterResponse.cs" />
+    <Compile Include="Models\SendMessage.cs" />
+    <Compile Include="Models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

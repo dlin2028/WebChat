@@ -5,9 +5,9 @@ using System.Web;
 
 namespace DavidChatAPI.Models
 {
-    public class Room
+    public class CreateRoom
     {
-        public Guid RoomID;
+        public Guid UserID;
         public string Name;
         public string Password;
     }
