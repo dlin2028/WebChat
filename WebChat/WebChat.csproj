@@ -88,14 +88,6 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Manager.cs" />
-    <Compile Include="Models\CreateRoom.cs" />
-    <Compile Include="Models\CreateRoomResponse.cs" />
-    <Compile Include="Models\GetMessageResponse.cs" />
-    <Compile Include="Models\GetRoomsResponse.cs" />
-    <Compile Include="Models\JoinRoom.cs" />
-    <Compile Include="Models\JoinRoomResponse.cs" />
-    <Compile Include="Models\RegisterResponse.cs" />
-    <Compile Include="Models\SendMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Signup.aspx.cs">
       <DependentUpon>Signup.aspx</DependentUpon>

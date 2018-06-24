@@ -82,6 +82,7 @@ namespace WebChat
             {
                 client.BaseAddress = baseUri;
                 RegisterResponse response = (RegisterResponse)JsonConvert.DeserializeObject(client.DownloadString("User/Register"));
+                
 
                 if (!response.Result)
                 {

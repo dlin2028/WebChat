@@ -19,9 +19,10 @@ namespace DavidChatAPI.Controllers
 
         [HttpGet]
         [Route("Room/GetRooms/")]
-        public GetRoomsResponse GetRooms()
+        public IEnumerable<Room> GetRooms()
         {
             DataTable table = new DataTable();
+
             using (SqlConnection connection = new SqlConnection(connectionString))
             using (SqlCommand command = new SqlCommand("client.GetRooms", connection))
             using (SqlDataAdapter adapter = new SqlDataAdapter(command))
@@ -34,18 +35,18 @@ namespace DavidChatAPI.Controllers
             }
 
 
-            List<string> rooms = new List<string>();
+            var rooms = new List<Room>();
             foreach (DataRow row in table.Rows)
             {
-                rooms.Add(row.Field<string>("Name"));
+                rooms.Add(new Room() { Name = row["Name"].ToString() });
             }
 
-            return new GetRoomsResponse() { Rooms = rooms.ToArray() };
+            return rooms;
         }
         
         [HttpPost]
         [Route("Room/JoinRoom/")]
-        public JoinRoomResponse JoinRoom([FromBody] JoinRoom joinRoom)
+        public Room JoinRoom([FromBody] RoomInfo joinRoom)
         {
             DataTable table = new DataTable();
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -64,19 +65,18 @@ namespace DavidChatAPI.Controllers
 
             if(table.Rows.Count <= 0)
             {
-                return new JoinRoomResponse() { Result = false };
+                return null;
             }
 
-            return new JoinRoomResponse()
+            return new Room()
             {
-                Result = true,
                 RoomID = table.Rows[0].Field<Guid>("RoomID")
             };
         }
 
         [HttpPost]
-        [Route("Room/CreateRoom/")]
-        public CreateRoomResponse CreateRoom([FromBody] CreateRoom createRoom)
+        [Route("Room/GetUsers/")]
+        public IEnumerable<User> GetUsers([FromBody] GetUsers getUsers)
         {
             DataTable table = new DataTable();
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -84,9 +84,43 @@ namespace DavidChatAPI.Controllers
             using (SqlDataAdapter adapter = new SqlDataAdapter(command))
             {
                 command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.Add(new SqlParameter("@userID", createRoom.UserID));
-                command.Parameters.Add(new SqlParameter("@roomName", createRoom.Name));
-                command.Parameters.Add(new SqlParameter("@password", createRoom.Password));
+                command.Parameters.Add(new SqlParameter("@userID", joinRoom.UserID));
+                command.Parameters.Add(new SqlParameter("@roomName", joinRoom.Name));
+                command.Parameters.Add(new SqlParameter("@password", joinRoom.Password));
+
+                connection.Open();
+                adapter.Fill(table);
+                connection.Close();
+            }
+
+
+            if (table.Rows.Count == 0)
+            {
+                return null;
+            }
+
+            var users = new List<User>();
+            foreach (DataRow row in table.Rows)
+            {
+                users.Add(new User() { Name = row.Field<string>("Name") });
+            }
+
+            return users;
+        }
+
+        [HttpPost]
+        [Route("Room/CreateRoom/")]
+        public Room CreateRoom([FromBody] RoomInfo roomInfo)
+        {
+            DataTable table = new DataTable();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlCommand command = new SqlCommand("Client.JoinRoom", connection))
+            using (SqlDataAdapter adapter = new SqlDataAdapter(command))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.Add(new SqlParameter("@userID", roomInfo.UserID));
+                command.Parameters.Add(new SqlParameter("@roomName", roomInfo.Name));
+                command.Parameters.Add(new SqlParameter("@password", roomInfo.Password));
 
                 connection.Open();
                 adapter.Fill(table);
@@ -95,19 +129,18 @@ namespace DavidChatAPI.Controllers
 
             if (table.Rows.Count <= 0)
             {
-                return new CreateRoomResponse() { Result = false };
+                return null;
             }
 
-            return new CreateRoomResponse()
+            return new Room()
             {
-                Result = true,
                 RoomID = table.Rows[0].Field<Guid>("RoomID")
             };
         }
 
         [HttpGet]
         [Route("Room/LeaveRoom/{userID}")]
-        public void LeaveRoom(Guid userID)
+        public IHttpActionResult LeaveRoom(Guid userID)
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
             using (SqlCommand command = new SqlCommand("Client.LeaveRoom", connection))
@@ -119,6 +152,8 @@ namespace DavidChatAPI.Controllers
                 command.ExecuteNonQuery();
                 connection.Close();
             }
+
+            return Ok();
         }
     }
 }

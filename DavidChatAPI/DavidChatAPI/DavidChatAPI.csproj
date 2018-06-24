@@ -92,16 +92,6 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\CreateRoom.cs" />
-    <Compile Include="Models\CreateRoomResponse.cs" />
-    <Compile Include="Models\GetMessageResponse.cs" />
-    <Compile Include="Models\GetRoomsResponse.cs" />
-    <Compile Include="Models\JoinRoom.cs" />
-    <Compile Include="Models\JoinRoomResponse.cs" />
-    <Compile Include="Models\Message.cs" />
-    <Compile Include="Models\RegisterResponse.cs" />
-    <Compile Include="Models\SendMessage.cs" />
-    <Compile Include="Models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -113,7 +103,12 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\DavidChatAPI.Models\DavidChatAPI.Models.csproj">
+      <Project>{7EBB1DC2-12BF-4512-9EEA-C4CED5EF87BD}</Project>
+      <Name>DavidChatAPI.Models</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

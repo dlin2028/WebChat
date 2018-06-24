@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27703.2018
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebChat", "WebChat\WebChat.csproj", "{DE6C6EEC-F41F-4F90-AAA6-D32DD06314D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DavidChatAPI.Models", "DavidChatAPI\DavidChatAPI.Models\DavidChatAPI.Models.csproj", "{7EBB1DC2-12BF-4512-9EEA-C4CED5EF87BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{DE6C6EEC-F41F-4F90-AAA6-D32DD06314D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DE6C6EEC-F41F-4F90-AAA6-D32DD06314D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE6C6EEC-F41F-4F90-AAA6-D32DD06314D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EBB1DC2-12BF-4512-9EEA-C4CED5EF87BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EBB1DC2-12BF-4512-9EEA-C4CED5EF87BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EBB1DC2-12BF-4512-9EEA-C4CED5EF87BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EBB1DC2-12BF-4512-9EEA-C4CED5EF87BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
