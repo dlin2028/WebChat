@@ -10,7 +10,7 @@ namespace WebChat
     using System;
     using System.Collections.Generic;
     using System.Data;
-    using System.Data.SqlClient;
+    using System.IO;
     using System.Linq;
     using System.Net;
     using System.Web;
@@ -46,7 +46,6 @@ namespace WebChat
         public Room Room;
 
         private string baseUri;
-        private SqlConnection connection;
         private Dictionary<int, User> users;
         Dictionary<int, Message> messages;
 
@@ -55,24 +54,21 @@ namespace WebChat
             messages = new Dictionary<int, Message>();
             users = new Dictionary<int, User>();
             this.baseUri = baseUri;
-            connection = new SqlConnection(baseUri);
         }
 
         public bool Register()
         {
-            using (WebClient client = new WebClient())
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(baseUri + $"User/Register/{User.Guid}/{(int)User.Color}");
+            request.AutomaticDecompression = DecompressionMethods.GZip;
+
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            using (Stream stream = response.GetResponseStream())
+            using (StreamReader reader = new StreamReader(stream))
             {
-                client.BaseAddress = baseUri;
-                User response = (User)JsonConvert.DeserializeObject(client.DownloadString("User/Register"));
-                
-
-                if (response == null)
-                {
-                    return false;
-                }
-
-                User.Guid = response.Guid;
+                var output = JsonConvert.DeserializeObject<User>(reader.ReadToEnd());
+                User.Guid = output.Guid;
             }
+
             return true;
         }
 
@@ -81,7 +77,7 @@ namespace WebChat
             using (WebClient client = new WebClient())
             {
                 client.BaseAddress = baseUri;
-                List<User> userList = (List<User>)JsonConvert.DeserializeObject(client.DownloadString("User/Register"));
+                List<User> userList = JsonConvert.DeserializeObject<List<User>>(client.DownloadString("User/GetUsers"));
 
                 foreach (var user in userList)
                 {
@@ -95,150 +91,100 @@ namespace WebChat
             using (WebClient client = new WebClient())
             {
                 client.BaseAddress = baseUri;
-                client.UploadString("Room/JoinRoom", new Room(name, password, null);
-                User response = (User)JsonConvert.DeserializeObject();
 
+                RoomInfo roomInfo = new RoomInfo()
+                {
+                    UserID = User.Guid,
+                    Name = name,
+                    Password = password
+                };
 
+                Room response = JsonConvert.DeserializeObject<Room>(client.UploadString("Room/JoinRoom", JsonConvert.SerializeObject(roomInfo)));
+           
                 if (response == null)
                 {
                     return false;
                 }
 
-                User.Guid = response.Guid;
+                Room.Guid = response.Guid;
             }
             return true;
         }
 
         public bool CreateRoom(string name, string password)
         {
-            var createCommand = new SqlCommand("client.CreateRoom", connection);
-            createCommand.CommandType = System.Data.CommandType.StoredProcedure;
-            createCommand.Parameters.Add(new SqlParameter("@userID", User.Guid));
-            createCommand.Parameters.Add(new SqlParameter("@name", name));
-            createCommand.Parameters.Add(new SqlParameter("@password", password));
-
-            bool result = false;
-            using (SqlDataAdapter adapter = new SqlDataAdapter(createCommand))
+            using (WebClient client = new WebClient())
             {
-                try
-                {
-                    connection.Open();
+                client.BaseAddress = baseUri;
 
-                    DataTable table = new DataTable();
-                    adapter.Fill(table);
-                    Room = new Room(name, password, table.Rows[0].Field<Guid>("RoomID"));
-
-                    connection.Close();
-                    result = true;
-                }
-                catch (Exception ex)
+                RoomInfo roomInfo = new RoomInfo()
                 {
-                    connection.Close();
-                    result = false;
+                    UserID = User.Guid,
+                    Name = name,
+                    Password = password
+                };
+
+                Room response = JsonConvert.DeserializeObject<Room>(client.UploadString("Room/CreateRoom", JsonConvert.SerializeObject(roomInfo)));
+
+                if (response == null)
+                {
+                    return false;
                 }
+
+                Room.Guid = response.Guid;
             }
-            return result;
+            return true;
         }
 
         public void LeaveRoom()
         {
-            var roomsCommand = new SqlCommand("client.LeaveRoom", connection);
-            roomsCommand.CommandType = System.Data.CommandType.StoredProcedure;
-            roomsCommand.Parameters.Add(new SqlParameter("@userID", User.Guid));
-
-            try
-            {
-                connection.Open();
-                roomsCommand.ExecuteNonQuery();
-                connection.Close();
-            }
-            catch (Exception ex)
-            {
-                connection.Close();
-            }
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(baseUri + $"Room/LeaveRoom/{User.Guid}");
+            request.Method = "GET";
+            request.GetResponse();
         }
 
         public string[] GetRooms()
         {
-            var roomsCommand = new SqlCommand("client.GetRooms", connection);
-            roomsCommand.CommandType = System.Data.CommandType.StoredProcedure;
-
-            SqlDataAdapter adapter = new SqlDataAdapter(roomsCommand);
-            DataTable table = new DataTable();
-            adapter.Fill(table);
-
-            List<string> rooms = new List<string>();
-            foreach (DataRow row in table.Rows)
+            using (WebClient client = new WebClient())
             {
-                rooms.Add(row.Field<string>("Name").Trim());
-            }
+                client.BaseAddress = baseUri;
+                List<Room> roomList = JsonConvert.DeserializeObject<List<Room>>(client.DownloadString("Room/GetRooms"));
 
-            return rooms.ToArray();
+                string[] names = new string[roomList.Count];
+                for (int i = 0; i < roomList.Count; i++)
+                {
+                    names[i] = roomList[i].Name.Trim();
+                }
+                return names;
+            }
         }
 
-        public bool SendMessage(string message)
+        public bool SendMessage(string text)
         {
-            var roomsCommand = new SqlCommand("client.SendMessage", connection);
-            roomsCommand.CommandType = System.Data.CommandType.StoredProcedure;
-            roomsCommand.Parameters.Add(new SqlParameter("@userID", User.Guid));
-            roomsCommand.Parameters.Add(new SqlParameter("@roomID", Room.Guid));
-            roomsCommand.Parameters.Add(new SqlParameter("@text", message));
+            using (WebClient client = new WebClient())
+            {
+                SendMessage message = new SendMessage()
+                {
+                    UserID = User.Guid,
+                    RoomID = (Guid)Room.Guid,
+                    text = text
+                };
 
-            try
-            {
-                connection.Open();
-                roomsCommand.ExecuteNonQuery();
-                connection.Close();
-                return true;
+                client.BaseAddress = baseUri;
+                client.UploadString("Room/CreateRoom", JsonConvert.SerializeObject(message));
             }
-            catch (Exception ex)
-            {
-                connection.Close();
-                return false;
-            }
+            return true;
         }
 
         public Message[] GetNewMessages()
         {
-            var updateCommand = new SqlCommand("client.GetMessages", connection);
-            updateCommand.CommandType = System.Data.CommandType.StoredProcedure;
-            updateCommand.Parameters.Add(new SqlParameter("@roomID", Room.Guid));
-
-            using (SqlDataAdapter adapter = new SqlDataAdapter(updateCommand))
+            using (WebClient client = new WebClient())
             {
-                try
-                {
-                    DataTable table = new DataTable();
-                    connection.Open();
+                client.BaseAddress = baseUri;
+                List<Message> messages = JsonConvert.DeserializeObject<List<Message>>(client.UploadString("User/GetNewMessages", JsonConvert.SerializeObject(Room)));
 
-                    adapter.Fill(table);
-
-                    var newMessages = new List<Message>();
-                    foreach (DataRow row in table.Rows)
-                    {
-                        if (!users.ContainsKey(row.Field<int>("PublicID")))
-                        {
-                            connection.Close();
-                            GetUsers();
-                        }
-                        if (!messages.ContainsKey(row.Field<int>("MessageID")))
-                        {
-                            var msg = new Message(row.Field<string>("Text"), users[row.Field<int>("PublicID")], row.Field<DateTime>("Time"));
-
-                            messages.Add(row.Field<int>("MessageID"), msg);
-                            newMessages.Add(msg);
-                        }
-                    }
-
-                    connection.Close();
-                    return newMessages.ToArray();
-                }
-                catch (Exception ex)
-                {
-                    connection.Close();
-                }
+                return messages.ToArray();
             }
-            return new Message[0];
         }
     }
 }

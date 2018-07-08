@@ -11,13 +11,13 @@ using DavidChatAPI.Models;
 
 namespace DavidChatAPI.Controllers
 {
-    [RoutePrefix("api")]
+    [RoutePrefix("api/Room")]
     public class RoomController : ApiController
     {
         private static readonly string connectionString = ConfigurationManager.ConnectionStrings["SQLConnection"].ConnectionString;
 
         [HttpGet]
-        [Route("Room/GetRooms/")]
+        [Route("GetRooms")]
         public IEnumerable<Room> GetRooms()
         {
             DataTable table = new DataTable();
@@ -44,7 +44,7 @@ namespace DavidChatAPI.Controllers
         }
         
         [HttpPost]
-        [Route("Room/JoinRoom/")]
+        [Route("JoinRoom")]
         public Room JoinRoom([FromBody] RoomInfo joinRoom)
         {
             DataTable table = new DataTable();
@@ -74,7 +74,7 @@ namespace DavidChatAPI.Controllers
         }
 
         [HttpPost]
-        [Route("Room/GetUsers/")]
+        [Route("GetUsers")]
         public IEnumerable<User> GetUsers([FromBody] Room room)
         {
             DataTable table = new DataTable();
@@ -106,7 +106,7 @@ namespace DavidChatAPI.Controllers
         }
 
         [HttpPost]
-        [Route("Room/CreateRoom/")]
+        [Route("CreateRoom")]
         public Room CreateRoom([FromBody] RoomInfo roomInfo)
         {
             DataTable table = new DataTable();
@@ -136,7 +136,7 @@ namespace DavidChatAPI.Controllers
         }
 
         [HttpGet]
-        [Route("Room/LeaveRoom/{userID}")]
+        [Route("LeaveRoom/{userID}")]
         public IHttpActionResult LeaveRoom(Guid userID)
         {
             using (SqlConnection connection = new SqlConnection(connectionString))

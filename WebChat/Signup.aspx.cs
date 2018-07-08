@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DavidChatAPI.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -16,7 +17,7 @@ namespace WebChat
             if(Session["manager"] == null)
             {
                 //SQLManager manager = new SQLManager("Data Source = GMRMLTV; Initial Catalog = DavidChat; User ID = sa; Password = GreatMinds110;");
-                Session["manager"] = new SQLManager("Server=localhost;Database=DavidChat;Integrated Security=SSPI");
+                Session["manager"] = new SQLManager("http://localhost:53778/api/");
             }
             manager = (SQLManager)Session["manager"];
 
@@ -40,8 +41,12 @@ namespace WebChat
 
         protected void Button1_Click(object sender, EventArgs e)
         {
+            manager.User = new User()
+            {
+                Name = userBox.Text,
+                Color = (ConsoleColor)Enum.Parse(typeof(ConsoleColor), colorList.Text)
+            };
 
-            manager.User = new User(userBox.Text, (ConsoleColor)Enum.Parse(typeof(ConsoleColor), colorList.Text));
             manager.Register();
 
             if (((string[])Session["rooms"]).Contains(roomBox.Text))

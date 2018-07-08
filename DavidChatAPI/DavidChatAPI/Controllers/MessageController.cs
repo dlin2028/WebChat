@@ -11,12 +11,13 @@ using System.Web.Http;
 
 namespace DavidChatAPI.Controllers
 {
+    [RoutePrefix("api/Message")]
     public class MessageController : ApiController
     {
         private static readonly string connectionString = ConfigurationManager.ConnectionStrings["SQLConnection"].ConnectionString;
 
         [HttpPost]
-        [Route("Message/SendMessage")]
+        [Route("SendMessage")]
         public IHttpActionResult SendMessage([FromBody]SendMessage sendMessage)
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -36,7 +37,7 @@ namespace DavidChatAPI.Controllers
 
 
         [HttpPost]
-        [Route("Message/GetNewMessages")]
+        [Route("GetNewMessages")]
         public IEnumerable<Message> GetNewMessages([FromBody] Room room)
         {
             DataTable table = new DataTable();
