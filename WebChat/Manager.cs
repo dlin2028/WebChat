@@ -15,31 +15,6 @@ namespace WebChat
     using System.Net;
     using System.Web;
 
-    public class Message
-    {
-        public string Text;
-        public User User;
-        public DateTime Time;
-        public Message(string text, User user, DateTime time)
-        {
-            Text = text;
-            User = user;
-            Time = time;
-        }
-    }
-    public class Room
-    {
-        public string Name;
-        public string Password;
-        public Guid? Guid;
-
-        public Room(string name, string password, Guid guid)
-        {
-            Name = name;
-            Password = password;
-            Guid = guid;
-        }
-    }
     public class SQLManager
     {
         public User User;
@@ -77,7 +52,9 @@ namespace WebChat
             using (WebClient client = new WebClient())
             {
                 client.BaseAddress = baseUri;
-                List<User> userList = JsonConvert.DeserializeObject<List<User>>(client.DownloadString("User/GetUsers"));
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
+
+                List<User> userList = JsonConvert.DeserializeObject<List<User>>(client.UploadString("Room/GetUsers", JsonConvert.SerializeObject(Room)));
 
                 foreach (var user in userList)
                 {
@@ -90,6 +67,7 @@ namespace WebChat
         {
             using (WebClient client = new WebClient())
             {
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
                 client.BaseAddress = baseUri;
 
                 RoomInfo roomInfo = new RoomInfo()
@@ -106,7 +84,7 @@ namespace WebChat
                     return false;
                 }
 
-                Room.Guid = response.Guid;
+                Room = response;
             }
             return true;
         }
@@ -115,6 +93,7 @@ namespace WebChat
         {
             using (WebClient client = new WebClient())
             {
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
                 client.BaseAddress = baseUri;
 
                 RoomInfo roomInfo = new RoomInfo()
@@ -131,7 +110,7 @@ namespace WebChat
                     return false;
                 }
 
-                Room.Guid = response.Guid;
+                Room = response;
             }
             return true;
         }
@@ -163,15 +142,18 @@ namespace WebChat
         {
             using (WebClient client = new WebClient())
             {
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                client.BaseAddress = baseUri;
+                
                 SendMessage message = new SendMessage()
                 {
                     UserID = User.Guid,
-                    RoomID = (Guid)Room.Guid,
+                    RoomID = (Guid)Room.RoomID,
                     text = text
                 };
 
                 client.BaseAddress = baseUri;
-                client.UploadString("Room/CreateRoom", JsonConvert.SerializeObject(message));
+                client.UploadString("Message/SendMessage", JsonConvert.SerializeObject(message));
             }
             return true;
         }
@@ -181,7 +163,19 @@ namespace WebChat
             using (WebClient client = new WebClient())
             {
                 client.BaseAddress = baseUri;
-                List<Message> messages = JsonConvert.DeserializeObject<List<Message>>(client.UploadString("User/GetNewMessages", JsonConvert.SerializeObject(Room)));
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
+
+                List<Message> messages = JsonConvert.DeserializeObject<List<Message>>(client.UploadString("Message/GetNewMessages", JsonConvert.SerializeObject(Room)));
+
+                foreach (var msg in messages)
+                {
+                    if(!users.ContainsKey(msg.UserPublicID))
+                    {
+                        GetUsers();
+                    }
+
+                    msg.User = users[msg.UserPublicID];
+                }
 
                 return messages.ToArray();
             }

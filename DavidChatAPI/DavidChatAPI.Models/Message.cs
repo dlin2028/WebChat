@@ -11,5 +11,7 @@ namespace DavidChatAPI.Models
         public int UserPublicID;
         public int MessageID;
         public DateTime Time;
+        public string UserName;
+        public User User;
     }
 }

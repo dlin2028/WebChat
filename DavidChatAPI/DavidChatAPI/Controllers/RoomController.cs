@@ -66,7 +66,7 @@ namespace DavidChatAPI.Controllers
             {
                 return null;
             }
-
+            
             return new Room()
             {
                 RoomID = table.Rows[0].Field<Guid>("RoomID")
@@ -99,7 +99,7 @@ namespace DavidChatAPI.Controllers
             var users = new List<User>();
             foreach (DataRow row in table.Rows)
             {
-                users.Add(new User() { Name = row.Field<string>("Name") });
+                users.Add(new User() { Name = row.Field<string>("Name"), PublicID = row.Field<int>("PublicID"), Color = row.Field<ConsoleColor>("Color") });
             }
 
             return users;
@@ -111,7 +111,7 @@ namespace DavidChatAPI.Controllers
         {
             DataTable table = new DataTable();
             using (SqlConnection connection = new SqlConnection(connectionString))
-            using (SqlCommand command = new SqlCommand("Client.JoinRoom", connection))
+            using (SqlCommand command = new SqlCommand("Client.CreateRoom", connection))
             using (SqlDataAdapter adapter = new SqlDataAdapter(command))
             {
                 command.CommandType = CommandType.StoredProcedure;

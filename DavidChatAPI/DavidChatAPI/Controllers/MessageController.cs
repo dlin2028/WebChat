@@ -44,7 +44,7 @@ namespace DavidChatAPI.Controllers
             List<Message> messages = new List<Message>();
 
             using (SqlConnection connection = new SqlConnection(connectionString))
-            using (SqlCommand command = new SqlCommand("Client.SendMessage", connection))
+            using (SqlCommand command = new SqlCommand("Client.GetMessages", connection))
             using (SqlDataAdapter adapter = new SqlDataAdapter(command))
             {
                 command.CommandType = CommandType.StoredProcedure;
